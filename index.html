@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Updated viewport to help with mobile zoom/scale issues -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <title>CW – Chill War</title>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome for Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    /* CSS Variables for Consistent Theming */
+    :root {
+      --primary-color: #ff6b6b;
+      --secondary-color: #06d6a0;
+      --dark-bg: #121212;
+      --light-bg: #1a1a1a;
+      --text-color: #ffffff;
+      --secondary-text: #dddddd;
+      --accent-color: #e85555;
+    }
+    
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--text-color);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    
+    /* Header / Navbar */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(18, 18, 18, 0.95);
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    header.scrolled {
+      background: var(--dark-bg);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    nav {
+      position: relative;
+    }
+    nav ul {
+      display: flex;
+      gap: 25px;
+      list-style: none;
+    }
+    nav ul li {
+      position: relative;
+    }
+    nav ul li a {
+      color: var(--text-color);
+      font-size: 1rem;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      padding: 5px 0;
+      position: relative;
+    }
+    nav ul li a::after {
+      content: '';
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      background: var(--primary-color);
+      left: 0;
+      bottom: -3px;
+      transition: width 0.3s ease;
+    }
+    nav ul li a:hover::after,
+    nav ul li a.active::after {
+      width: 100%;
+    }
+
+    /* Dropdown Menu */
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 35px;
+      left: 0;
+      background: var(--light-bg);
+      min-width: 150px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      z-index: 1000;
+    }
+    .dropdown-content li {
+      width: 100%;
+    }
+    .dropdown-content li a {
+      padding: 10px 15px;
+      display: block;
+      color: var(--text-color);
+      transition: background 0.3s ease;
+    }
+    .dropdown-content li a:hover {
+      background: var(--primary-color);
+      color: var(--text-color);
+    }
+
+    /* Hamburger Menu (Mobile) */
+    .hamburger {
+      display: none; /* Hidden by default, shown in media query */
+      flex-direction: column;
+      cursor: pointer;
+      gap: 5px;
+    }
+    .hamburger div {
+      width: 25px;
+      height: 3px;
+      background: var(--text-color);
+      transition: all 0.3s ease;
+    }
+    
+    /* Mobile Menu */
+    @media (max-width: 768px) {
+      /* Ensure hamburger is shown on mobile */
+      .hamburger {
+        display: flex;
+      }
+      nav ul {
+        flex-direction: column;
+        background: var(--light-bg);
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        width: 200px;
+        padding: 20px;
+        border-radius: 10px;
+        display: none;
+        gap: 15px;
+      }
+      nav ul.active {
+        display: flex;
+      }
+      .hamburger.active .bar1 {
+        transform: rotate(-45deg) translate(-5px, 6px);
+      }
+      .hamburger.active .bar2 {
+        opacity: 0;
+      }
+      .hamburger.active .bar3 {
+        transform: rotate(45deg) translate(-5px, -6px);
+      }
+      .dropdown-content {
+        position: static;
+        box-shadow: none;
+        background: var(--light-bg);
+        border-radius: 0;
+      }
+      .roadmap ul {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    /* Hero Section */
+    .hero {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: var(--text-color);
+      text-align: center;
+      padding: 20px;
+      position: relative;
+      scroll-snap-align: start;
+      overflow: hidden;
+      margin-top: 60px; /* To prevent content from being hidden behind the fixed navbar */
+    }
+    
+    /* Slider */
+    .slider-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .slider {
+      display: flex;
+      transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+      height: 100%;
+    }
+    
+    .slide {
+      flex: 0 0 100%; /* Ensures each slide takes up 100% of the container's width */
+      height: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    /* Individual Slide Backgrounds */
+    .slide1 {
+      background-image: url('https://dd.dexscreener.com/ds-data/tokens/solana/FwrSMC3UVwtBVQJMM9Pb5Hqb4kgyaYzDQjLANXUwpump/header.png?size=xl&key=c95e33');
+    }
+    .slide2 {
+      background-image: url('https://dd.dexscreener.com/ds-data/tokens/solana/FwrSMC3UVwtBVQJMM9Pb5Hqb4kgyaYzDQjLANXUwpump/header.png?size=xl&key=c95e33');
+    }
+    .slide3 {
+      background-image: url('https://dd.dexscreener.com/ds-data/tokens/solana/FwrSMC3UVwtBVQJMM9Pb5Hqb4kgyaYzDQjLANXUwpump/header.png?size=xl&key=c95e33');
+    }
+    
+    /* Overlay for Readability */
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+    }
+    
+    /* Slide Content */
+    .slide-content {
+      position: relative;
+      z-index: 2;
+      padding: 20px;
+      max-width: 800px;
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .slide-content img {
+      max-width: 200px;
+      width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+      animation: fadeIn 1s ease-in-out;
+    }
+    
+    .slide-content h2 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      animation: fadeInUp 1s ease-in-out;
+    }
+    
+    .slide-content p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      animation: fadeInUp 1.2s ease-in-out;
+    }
+    
+    .slide-content a {
+      background: var(--primary-color);
+      color: var(--text-color);
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      animation: fadeInUp 1.4s ease-in-out;
+      display: inline-block;
+    }
+    .slide-content a:hover {
+      background: var(--accent-color);
+    }
+    
+    /* Slider Controls */
+    .slider-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+    
+    .slider-controls button {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(255, 107, 107, 0.7);
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    
+    .slider-controls button.active {
+      background: #fff;
+    }
+    
+    /* Sections */
+    section {
+      padding: 80px 10%;
+      background: var(--light-bg);
+      scroll-snap-align: start;
+      animation: fadeInUp 1s ease-in-out;
+    }
+    section:nth-of-type(even) {
+      background: var(--dark-bg);
+    }
+    section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-align: center;
+      color: var(--primary-color);
+    }
+    section p, section ul li p {
+      font-size: 1.1rem;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+    section ul {
+      list-style: none;
+      padding: 0;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    section ul li {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+    }
+    section ul li:hover {
+      transform: translateY(-5px);
+    }
+    section ul li h3 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: var(--secondary-color);
+    }
+    
+    /* Features */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+    }
+    .feature {
+      flex: 1 1 250px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .feature:hover {
+      transform: translateY(-10px);
+    }
+    .feature i {
+      font-size: 3rem;
+      color: var(--secondary-color);
+      margin-bottom: 15px;
+    }
+    .feature h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+    
+    /* Tokenomics Section with Chart */
+    .tokenomics {
+      background: var(--light-bg);
+      text-align: center;
+    }
+    
+    .tokenomics h2 {
+      color: var(--primary-color);
+    }
+    .tokenomics p {
+      color: var(--text-color);
+    }
+    
+    .token-content {
+      display: flex;
+      flex-direction: row;
+      gap: 40px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 40px auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .token-content .image-container,
+    .token-content .chart-container {
+      flex: 1 1 300px;
+      max-width: 500px;
+    }
+    
+    .token-content .image-container img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 1s ease-in-out;
+    }
+    
+    .token-content .chart-container {
+      position: relative;
+      height: 400px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      padding: 20px;
+    }
+    
+    .token-content .chart-container canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+    }
+    
+    /* Buy Button Specific Styling */
+    .buy-button {
+      background: var(--secondary-color);
+      color: #121212;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      font-size: 1.1rem;
+      margin-top: 20px; /* Adds space above the button */
+      display: inline-block;
+    }
+    .buy-button:hover {
+      background: var(--accent-color);
+    }
+    
+    /* Roadmap Section */
+    .roadmap {
+      background: var(--dark-bg);
+      text-align: center;
+    }
+    .roadmap h2 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      color: var(--primary-color);
+    }
+    .roadmap ul {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      list-style: none;
+      color: var(--text-color);
+    }
+    .roadmap ul li {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+      animation: fadeInUp 1.2s ease-in-out;
+    }
+    .roadmap ul li:hover {
+      transform: translateY(-10px);
+    }
+    .roadmap ul li h3 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: var(--secondary-color);
+    }
+    .roadmap ul li p {
+      font-size: 1rem;
+      color: var(--text-color);
+    }
+    
+    /* Whitepaper Section */
+    .whitepaper {
+      background: var(--light-bg);
+      text-align: center;
+    }
+    .whitepaper h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+    }
+    .whitepaper p {
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto 40px auto;
+      color: var(--text-color);
+    }
+    .whitepaper a {
+      background: var(--primary-color);
+      color: var(--text-color);
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      font-size: 1.1rem;
+      display: inline-block;
+    }
+    .whitepaper a:hover {
+      background: var(--accent-color);
+    }
+    
+    /* Governance Section */
+    .governance h3, .governance ul li h3 {
+      color: var(--secondary-color);
+    }
+    
+    /* Sustainability Section */
+    .sustainability h3, .sustainability ul li h3 {
+      color: var(--secondary-color);
+    }
+    
+    /* Technical Overview Section */
+    .technical-overview h3, .technical-overview ul li h3 {
+      color: var(--secondary-color);
+    }
+    
+    /* Rewards Section */
+    .rewards {
+      background: var(--dark-bg);
+      text-align: center;
+    }
+    .rewards h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+    }
+    .rewards p {
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto 30px auto;
+      color: var(--text-color);
+    }
+    .rewards .reward-feature {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+    }
+    .rewards .reward-feature:hover {
+      transform: translateY(-5px);
+    }
+    .rewards .reward-feature i {
+      font-size: 2rem;
+      color: var(--secondary-color);
+    }
+    .rewards .reward-feature div {
+      text-align: left;
+    }
+    .rewards .reward-feature div h3 {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      margin-bottom: 5px;
+    }
+    .rewards .reward-feature div p {
+      color: var(--text-color);
+    }
+    
+    /* Disclaimers Section */
+    .disclaimers {
+      background: var(--dark-bg);
+      text-align: left;
+      padding: 40px 10%;
+    }
+    .disclaimers h2 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .disclaimers p {
+      font-size: 1.1rem;
+      color: var(--text-color);
+      margin-bottom: 15px;
+    }
+    
+    /* Conclusion Section */
+    .conclusion {
+      background: var(--light-bg);
+      text-align: center;
+    }
+    .conclusion h2 {
+      color: var(--primary-color);
+    }
+    .conclusion p {
+      color: var(--text-color);
+      margin-bottom: 15px;
+    }
+    .conclusion ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 15px;
+    }
+    .conclusion ul li {
+      font-size: 1.1rem;
+      color: var(--text-color);
+      margin-bottom: 10px;
+      position: relative;
+      padding-left: 20px;
+    }
+    .conclusion ul li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--secondary-color);
+    }
+    
+    /* Footer */
+    footer {
+      background: #000;
+      color: #fff;
+      padding: 60px 20px;
+      text-align: center;
+      scroll-snap-align: start;
+      animation: fadeInUp 1s ease-in-out;
+    }
+    footer h2 {
+      font-size: 2rem;
+      margin-bottom: 30px;
+    }
+    footer ul {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    footer ul li a {
+      color: #fff;
+      font-size: 1.8rem;
+      transition: color 0.3s ease;
+    }
+    footer ul li a:hover {
+      color: var(--primary-color);
+    }
+    footer p {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .slider-controls button {
+        width: 12px;
+        height: 12px;
+      }
+      .token-content {
+        flex-direction: column;
+      }
+      .features {
+        flex-direction: column;
+        align-items: center;
+      }
+      .roadmap ul {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .logo {
+        font-size: 1.5rem;
+      }
+      nav ul li a {
+        font-size: 1rem;
+      }
+      section h2 {
+        font-size: 2rem;
+      }
+      footer h2 {
+        font-size: 1.5rem;
+      }
+      footer ul li a {
+        font-size: 1.5rem;
+      }
+      .conclusion h2 {
+        font-size: 2rem;
+      }
+      .token-content {
+        flex-direction: column;
+      }
+    }
+    
+    /* Additional Styling for Slide 2 Video Switching */
+    .video-switcher {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .video-switcher button {
+      background: var(--secondary-color);
+      color: #121212;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-weight: 500;
+    }
+    .video-switcher button.active {
+      background: var(--primary-color);
+      color: var(--text-color);
+    }
+    .video-switcher button:hover {
+      background: var(--accent-color);
+      color: var(--text-color);
+    }
+    .video-description {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: var(--text-color);
+    }
+
+    /* Ensure iframe is responsive */
+    .video-container iframe {
+      width: 100%;
+      height: 315px;
+    }
+    @media (max-width: 768px) {
+      .video-container iframe {
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Header / Navbar -->
+  <header>
+    <div class="logo">CW – Chill War</div>
+    <nav>
+      <ul>
+        <li><a href="#hero" class="active">Home</a></li>
+        <li><a href="#about-us">About</a></li>
+        <li><a href="#problems">Problems</a></li>
+        <li><a href="#platform-overview">Platform</a></li>
+        <li><a href="#tokenomics">Tokenomics</a></li>
+        <li class="dropdown">
+          <a href="#">More <i class="fas fa-caret-down"></i></a>
+          <ul class="dropdown-content">
+            <li><a href="#governance">Governance</a></li>
+            <li><a href="#roadmap">Roadmap</a></li>
+            <li><a href="#technical-overview">Technical</a></li>
+            <li><a href="#sustainability">Sustainability</a></li>
+            <li><a href="#whitepaper">Whitepaper</a></li>
+            <li><a href="#disclaimers">Disclaimers</a></li>
+            <li><a href="#conclusion">Conclusion</a></li>
+            <li><a href="#footer">Socials</a></li>
+          </ul>
+        </li>
+      </ul>
+      <!-- Hamburger for mobile -->
+      <div class="hamburger" id="hamburger">
+        <div class="bar1"></div>
+        <div class="bar2"></div>
+        <div class="bar3"></div>
+      </div>
+    </nav>
+  </header>
+  
+  <!-- Hero Section with Slider -->
+  <section id="hero" class="hero">
+    <div class="slider-container">
+      <div class="slider">
+        <!-- Slide 1: Token Information -->
+        <div class="slide slide1">
+          <div class="slide-content">
+            <img src="https://dd.dexscreener.com/ds-data/tokens/solana/FwrSMC3UVwtBVQJMM9Pb5Hqb4kgyaYzDQjLANXUwpump.png?size=lg&key=c95e33" alt="CW Logo" loading="lazy">
+            <h2>CW Token</h2>
+            <p>Your gateway to a united and conscious community. Empowering peace through decentralized governance.</p>
+            <a href="#tokenomics">Learn More</a>
+          </div>
+        </div>
+        <!-- Slide 2: Airdrop Bot Registration Videos -->
+        <div class="slide slide2">
+          <div class="slide-content">
+            <h2>Airdrop Bot Features</h2>
+            <p>Explore the various features of our airdrop bot through these informative videos.</p>
+            <!-- Video Container -->
+            <div class="video-container" style="margin-top: 20px; max-width: 100%; position: relative;">
+              <iframe id="botVideo" src="https://www.youtube.com/embed/VIDEO_ID_1" 
+                      title="Airdrop Bot Feature 1" frameborder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+            <!-- Video Switcher Buttons -->
+            <div class="video-switcher">
+              <button class="active" data-video="VIDEO_ID_1" data-description="Discover how to register and start earning CW tokens effortlessly with our airdrop bot.">
+                Registration Process
+              </button>
+              <button data-video="VIDEO_ID_2" data-description="Learn about the various games and engagement tools available to earn more CW tokens.">
+                Games & Engagement
+              </button>
+              <button data-video="VIDEO_ID_3" data-description="Understand the referral programs and how you can maximize your rewards by inviting friends.">
+                Referral Programs
+              </button>
+            </div>
+            <!-- Video Description -->
+            <div class="video-description" id="videoDescription">
+              Discover how to register and start earning CW tokens effortlessly with our airdrop bot.
+            </div>
+            <a href="#airdrop-bot">Learn More About Airdrop Bot</a>
+          </div>
+        </div>
+        <!-- Slide 3: Token Chart & Buy Button -->
+        <div class="slide slide3">
+          <div class="slide-content">
+            <h2>CW Token Price Chart</h2>
+            <div class="chart-container" style="margin-top: 20px;">
+              <canvas id="slidePriceChart"></canvas>
+            </div>
+            <p style="margin-top: 20px;">Stay updated with the latest CW Token price movements.</p>
+            <a href="https://dexscreener.com/solana/5zoyub1lb4qqzggrvylwxkfuu7zuyyk98xw2mgk6azhj" target="_blank" rel="noopener noreferrer" class="buy-button">Buy on DexScreener</a>
+          </div>
+        </div>
+      </div>
+      <!-- Slider Controls -->
+      <div class="slider-controls">
+        <button class="active" aria-label="Slide 1"></button>
+        <button aria-label="Slide 2"></button>
+        <button aria-label="Slide 3"></button>
+      </div>
+    </div>
+  </section>
+  
+  <!-- About Us Section -->
+  <section id="about-us" class="about-us">
+    <h2>About CW – Chill War</h2>
+    <p>CW – Chill War is a community-driven initiative launched on PumpFun (Solana-based). Our mission is to foster global conflict awareness, promote open dialogue, and empower decentralized governance through innovative tools and engaging community activities.</p>
+    
+    <div class="features">
+      <div class="feature">
+        <i class="fas fa-bullhorn"></i>
+        <h3>Global Awareness</h3>
+        <p>Raising awareness about pressing geopolitical conflicts through unbiased discussions and informative broadcasts.</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-users"></i>
+        <h3>Community Governance</h3>
+        <p>Empowering every token holder with equal voting rights to shape the project's future and ecosystem.</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-gem"></i>
+        <h3>Rewarding Engagement</h3>
+        <p>Offering gamified engagement tools that reward active participants with CW tokens for their contributions.</p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Problems Section -->
+  <section id="problems" class="problems">
+    <h2>The Problem</h2>
+    <p>Geopolitical tensions and regional disputes—such as those in Russia–Ukraine, Palestine–Israel, and China–Taiwan—have become some of the most pressing issues of our time. These conflicts are often distorted by misinformation, media biases, and echo chambers that can polarize communities and impede understanding.</p>
+    
+    <ul>
+      <li>
+        <h3>Biased Information Ecosystems</h3>
+        <p>Mainstream media can sometimes be skewed or influenced by political and corporate agendas, limiting the authenticity of conversations surrounding conflicts. CW – Chill War introduces a decentralized and community-owned platform that encourages transparent dialogue free of political biases.</p>
+      </li>
+      <li>
+        <h3>Misinformation and Polarization</h3>
+        <p>In today’s hyper-connected world, echo chambers reinforce opinions and make it challenging to determine reliable facts. CW – Chill War counters this trend by curating forums where both sides of a conflict are given an equal platform—helping participants form well-rounded perspectives.</p>
+      </li>
+      <li>
+        <h3>Centralized Decision-Making</h3>
+        <p>Many blockchain initiatives allow large holders or core team members to make unilateral decisions. CW – Chill War breaks this pattern by ensuring all token holders have an equal voice in shaping the project’s future. Through community polls and voting features, the platform aims to democratize token management and ecosystem development.</p>
+      </li>
+    </ul>
+  </section>
+  
+  <!-- Platform Overview Section -->
+  <section id="platform-overview" class="platform-overview">
+    <h2>Platform Overview</h2>
+    
+    <ul>
+      <li>
+        <h3>Weekly X (Twitter) Spaces</h3>
+        <p><strong>Unbiased Interviews:</strong> Scheduled discussions with stakeholders representing both sides of a conflict—fostering critical thinking and mutual understanding.</p>
+        <p><strong>Expert Insights:</strong> Occasional guest speakers (academics, political scientists, NGOs) will offer additional context and credible background information.</p>
+        <p><strong>Community Q&A:</strong> Listeners can pose questions and weigh in on the topic, making it an interactive experience that reflects our inclusive ethos.</p>
+      </li>
+      <li>
+        <h3>Telegram Bot and Gamified Engagement</h3>
+        <p>Our proprietary Telegram bot is central to CW – Chill War’s ecosystem. Key features include:</p>
+        <ul>
+          <li><strong>Leaderboards:</strong> Track the most active participants as they contribute to discussions, play games, and refer new members. Top-ranking users can earn additional CW tokens.</li>
+          <li><strong>Wide Array of Games:</strong> Blackjack, Poker, Baccarat: Classic casino-style games that award winners with CW tokens.</li>
+          <li><strong>Duels (Coming Soon):</strong> Challenge another community member in a head-to-head matchup, with winners claiming tokens or leaderboard points.</li>
+          <li><strong>Shop & Rewards (In Development):</strong> A curated shop where CW tokens can be used to purchase platform perks, digital collectibles, or other in-ecosystem services.</li>
+          <li>
+            <strong>Referral Program & Earn Program (Coming Soon):</strong>
+            <ul>
+              <li><strong>Referral:</strong> Users will be incentivized to onboard friends through unique referral links, earning bonus CW tokens for each successful invite.</li>
+              <li><strong>Earn:</strong> Periodic tasks and campaigns (watch broadcasts, share educational materials, moderate discussions) will reward participants with tokens, further stimulating community engagement.</li>
+            </ul>
+          </li>
+          <li><strong>Seasonal Airdrops:</strong> Season 2 Launch: Accumulated airdrop rewards will be disbursed to users at the start of Season 2, commensurate with their participation and leaderboard standings.</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+  
+  <!-- Rewards Section -->
+  <section id="rewards" class="rewards">
+    <h2>Rewards in Our Bot</h2>
+    <p>Enhance your experience with CW – Chill War by earning exclusive access to our VIP Signal Groups. The more CW Coins you hold, the higher your rank and the better your rewards!</p>
+    
+    <div class="reward-feature">
+      <i class="fas fa-star"></i>
+      <div>
+        <h3>VIP Signal Group 1</h3>
+        <p>Unlock access by reaching rank Basic Major in our Telegram bot. Get real-time signals, exclusive insights, and priority support.</p>
+      </div>
+    </div>
+    
+    <div class="reward-feature">
+      <i class="fas fa-star-half-alt"></i>
+      <div>
+        <h3>VIP Signal Group 2</h3>
+        <p>Unlock access by reaching rank Major. Enjoy all benefits of Group 1 plus advanced signals, in-depth analysis, and dedicated community management.</p>
+      </div>
+    </div>
+    
+    <p>Achieve higher ranks by accumulating more CW Coins and actively participating in the community to gain enhanced privileges and rewards. MORE REWARDS COMING SOON!</p>
+  </section>
+  
+  <!-- Tokenomics Section with Chart -->
+  <section id="tokenomics" class="tokenomics">
+    <h2>Tokenomics</h2>
+    
+    <ul>
+      <li>
+        <h3>Token Name:</h3>
+        <p>CW – Chill War</p>
+      </li>
+      <li>
+        <h3>Blockchain:</h3>
+        <p>PumpFun (Solana-based)</p>
+      </li>
+      <li>
+        <h3>Initial Supply:</h3>
+        <p>1,000,000,000 CW tokens</p>
+      </li>
+      <li>
+        <h3>Token Burn Strategy</h3>
+        <p>To promote scarcity and reward holders, the core team will orchestrate three scheduled burns, each 10,000,000 CW tokens (33% of supply), triggered by reaching key market cap milestones:</p>
+        <ul>
+          <li><strong>Burn #1:</strong> Upon hitting $1,000,000 in MCAP</li>
+          <li><strong>Burn #2:</strong> Upon hitting $5,000,000 in MCAP</li>
+          <li><strong>Burn #3:</strong> Upon hitting $10,000,000 in MCAP</li>
+        </ul>
+        <p>Each burn reduces the circulating supply, potentially increasing token value and rewarding dedicated holders.</p>
+      </li>
+      <li>
+        <h3>Community Rewards and Airdrops</h3>
+        <p><strong>Seasonal Airdrops:</strong> Engagement in Telegram bot games, referral programs, and knowledge-sharing sessions will accumulate reward points. Users will receive CW tokens during seasonal airdrops, starting in Season 2.</p>
+        <p><strong>Governance Polls:</strong> Token holders can suggest or vote on modifications to the reward system, additional burn events, or new product features—ensuring the ecosystem continuously reflects community desires.</p>
+      </li>
+    </ul>
+    
+  </section>
+  
+  <!-- Governance Section -->
+  <section id="governance" class="governance">
+    <h2>Governance: Equal Voice for All</h2>
+    
+    <ul>
+      <li>
+        <h3>Core Principle: One Holder, One Vote</h3>
+        <p>CW – Chill War believes in egalitarian governance, wherein every token holder has an equal say—not strictly proportional to their holdings. Through polls and proposals in the Telegram bot, the community decides how tokens are allocated, how burns are scheduled, and which collaborations to pursue.</p>
+      </li>
+      <li>
+        <h3>Implementation Mechanisms</h3>
+        <p>
+          <strong>Telegram Polling:</strong><br>
+          <ul>
+            <li><strong>Equal Voting Weight:</strong> Each unique wallet (linked to a Telegram user ID) casts a single vote.</li>
+            <li><strong>Key Topics:</strong> Burn schedules, new features for the Telegram bot, conflict topics to cover, partnerships, and more.</li>
+          </ul>
+        </p>
+        <p>
+          <strong>Real-Time Feedback:</strong><br>
+          X (Twitter) Spaces: Post-broadcast, a voting window can open for specific proposals raised during the conversation.
+        </p>
+        <p>
+          <strong>Transparent Results:</strong><br>
+          Vote tallies and decisions are publicly viewable, upholding integrity and community trust.
+        </p>
+      </li>
+    </ul>
+  </section>
+  
+  <!-- Roadmap Section -->
+  <section id="roadmap" class="roadmap">
+    <h2>Our Roadmap</h2>
+    <ul>
+      <li>
+        <h3>Phase 1 – Project Foundations</h3>
+        <p>Launch token on PumpFun (Solana-based). Set up social media channels, and initiate initial marketing and promotions.</p>
+      </li>
+      <li>
+        <h3>Phase 2 – Engagement & Growth</h3>
+        <p>Begin weekly X (Twitter) Spaces interviews, expand Telegram bot features, and introduce referral & earn programs to boost community engagement.</p>
+      </li>
+      <li>
+        <h3>Phase 3 – First Burn & Season 2 Airdrops</h3>
+        <p>Execute the first token burn upon reaching $1,000,000 MCAP and launch Season 2 with airdrop distributions based on community participation.</p>
+      </li>
+      <li>
+        <h3>Phase 4 – Airdrop Time</h3>
+        <p>Release the withdrawal phase where users can withdraw their Telegram in-game tokens for real tokens.</p>
+      </li>
+      <li>
+        <h3>Phase 5 – Further Improvements</h3>
+        <p>Conduct multiple polls via our Telegram bot to decide the future direction of the token based on community preferences.</p>
+      </li>
+    </ul>
+  </section>
+  
+  <!-- Technical Overview Section -->
+  <section id="technical-overview" class="technical-overview">
+    <h2>Technical Overview</h2>
+    
+    <ul>
+      <li>
+        <h3>PumpFun (Solana-based)</h3>
+        <p><strong>High Throughput, Low Fees:</strong> Solana’s architecture allows near-instant settlements and cost-effective transactions, making it ideal for gaming and frequent rewards distribution.</p>
+        <p><strong>Smart Contract Flexibility:</strong> PumpFun aligns with the Solana ecosystem, ensuring easy integration with decentralized exchanges, liquidity pools, and advanced DeFi features.</p>
+      </li>
+      <li>
+        <h3>Security and Audits</h3>
+        <p><strong>Smart Contract:</strong> Undergoing periodic internal and external audits to ensure robust security and transparency.</p>
+        <p><strong>Telegram Bot:</strong> Uses secure APIs to manage user authentication, rewards distribution, and game logic to prevent exploitation or manipulation.</p>
+      </li>
+      <li>
+        <h3>Data Management</h3>
+        <p><strong>Off-Chain & On-Chain Data:</strong> While game interactions and leaderboards primarily occur off-chain for speed, token distributions and airdrops are recorded on-chain to maintain verifiable integrity.</p>
+      </li>
+    </ul>
+  </section>
+  
+  <!-- Sustainability and Social Impact Section -->
+  <section id="sustainability" class="sustainability">
+    <h2>Sustainability and Social Impact</h2>
+    
+    <ul>
+      <li>
+        <h3>Financial Sustainability</h3>
+        <p><strong>Token Burn Mechanism:</strong> Reduces circulating supply, potentially boosting the token’s value and sustaining long-term investor interest.</p>
+        <p><strong>Community-Driven Revenue Streams:</strong> Referral programs, optional in-game features (e.g., advanced tournaments), and donation models to expand project resources in a fair, transparent manner.</p>
+      </li>
+      <li>
+        <h3>Social Responsibility</h3>
+        <p><strong>Inclusive Dialogue:</strong> Weekly broadcasts illuminate multiple perspectives on conflicts, contributing to a more nuanced understanding.</p>
+        <p><strong>Collaboration with NGOs and Academics:</strong> Encourages credible analysis, bridging the gap between blockchain enthusiasts and global peace initiatives.</p>
+        <p><strong>Empowerment:</strong> Gives everyday citizens a voice in shaping narratives around conflicts that may otherwise be monopolized by state or media actors.</p>
+      </li>
+    </ul>
+  </section>
+  
+  <!-- Whitepaper Section -->
+  <section id="whitepaper" class="whitepaper">
+    <h2>Our Whitepaper</h2>
+    <p>Discover the comprehensive vision, mission, and technical details behind CW – Chill War. Understand how we aim to merge decentralized technology with global conflict awareness to create a more informed and harmonious world.</p>
+    <a href="whitepaper.pdf" target="_blank" rel="noopener noreferrer">Download Whitepaper</a>
+  </section>
+  
+  <!-- Disclaimers Section -->
+  <section id="disclaimers" class="disclaimers">
+    <h2>Disclaimers</h2>
+    <p><strong>Not Financial or Political Advice:</strong> All content, discussions, and token-related activities provided by CW – Chill War do not constitute financial or political advice. Users are urged to perform independent research.</p>
+    <p><strong>Volatility & Risk:</strong> Cryptocurrencies involve significant market risk. Prices can be highly volatile, and participants must exercise caution when trading or investing in CW tokens.</p>
+    <p><strong>Regulatory Compliance:</strong> The evolving nature of cryptocurrency regulations could impact project operations. CW – Chill War will remain vigilant and adapt to ensure ongoing compliance.</p>
+    <p><strong>Community Governance:</strong> While equal governance is a core principle, feasibility and final implementation details may evolve based on technical, regulatory, or security considerations.</p>
+  </section>
+  
+  <!-- Conclusion Section -->
+  <section id="conclusion" class="conclusion">
+    <h2>Conclusion</h2>
+    <p>CW – Chill War merges decentralized technology, gamified community engagement, and conflict awareness in a bold effort to foster a more conscious and united world. By offering:</p>
+    <ul>
+      <li>Unbiased and interactive forums on critical world conflicts</li>
+      <li>Comprehensive governance where every holder has an equal voice</li>
+      <li>Fun, rewarding experiences through Telegram-based gaming and referral incentives,</li>
+    </ul>
+    <p>we collectively aim to bridge divides, reduce misinformation, and empower peace-building efforts. We invite you to join our journey, engage in meaningful dialogue, and help shape CW – Chill War into a platform that not only entertains but also enlightens and uplifts communities across the globe.</p>
+    <p><strong>Contact & Community:</strong><br>
+    Telegram: <a href="https://t.me/chillwarsol" target="_blank" rel="noopener noreferrer">T.me/ChillWarSOL</a><br>
+    Twitter (X): <a href="https://x.com/ChillWarOnSOL" target="_blank" rel="noopener noreferrer">https://x.com/ChillWarOnSOL</a><br>
+    Website: <a href="https://www.chillwar.io" target="_blank" rel="noopener noreferrer">www.chillwar.io</a></p>
+    <p>Thank you for supporting our community!</p>
+  </section>
+  
+  <!-- Footer -->
+  <footer id="footer">
+    <h2>Stay Connected</h2>
+    <ul>
+      <li><a href="https://t.me/chillwarsol" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i></a></li>
+      <li><a href="https://x.com/ChillWarOnSOL" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a></li>
+      <li><a href="https://www.t.me/chillwarbot" target="_blank" rel="noopener noreferrer"><i class="fas fa-robot"></i></a></li>
+      <li><a href="whitepaper.pdf" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-alt"></i> White Paper</a></li>
+    </ul>
+    <p>© 2025 Chill War. All rights reserved.</p>
+  </footer>
+  
+  <!-- JavaScript for Interactive Elements -->
+  <script>
+    // Hamburger Menu Toggle
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.querySelector('nav ul');
+    
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navMenu.classList.toggle('active');
+    });
+    
+    // Change Navbar on Scroll
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('header');
+      header.classList.toggle('scrolled', window.scrollY > 50);
+    });
+    
+    // Slider Functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const slider = document.querySelector('.slider');
+      const slides = document.querySelectorAll('.slide');
+      const controls = document.querySelectorAll('.slider-controls button');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let slideInterval;
+      const slideDuration = 5000; // 5 seconds
+
+      // Function to update the slider position and active control
+      const updateSlider = () => {
+        slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+        controls.forEach((control, index) => {
+          control.classList.toggle('active', index === currentIndex);
+        });
+      };
+
+      // Function to go to the next slide
+      const nextSlide = () => {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        updateSlider();
+      };
+
+      // Function to go to a specific slide
+      const goToSlide = (index) => {
+        currentIndex = index;
+        updateSlider();
+        resetInterval();
+      };
+
+      // Function to start the automatic sliding
+      const startInterval = () => {
+        slideInterval = setInterval(nextSlide, slideDuration);
+      };
+
+      // Function to reset the sliding interval
+      const resetInterval = () => {
+        clearInterval(slideInterval);
+        startInterval();
+      };
+
+      // Event listeners for controls
+      controls.forEach((control, index) => {
+        control.addEventListener('click', () => goToSlide(index));
+      });
+
+      // Swipe functionality
+      let startX = 0;
+      let isDragging = false;
+      const sliderContainer = document.querySelector('.slider-container');
+
+      // Mouse Events
+      sliderContainer.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        slider.style.transition = 'none';
+      });
+
+      sliderContainer.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const currentX = e.clientX;
+        const deltaX = currentX - startX;
+        slider.style.transform = `translateX(calc(-${currentIndex * 100}% + ${deltaX / sliderContainer.offsetWidth * 100}%))`;
+      });
+
+      sliderContainer.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        slider.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      });
+
+      sliderContainer.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          isDragging = false;
+          slider.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1)';
+          updateSlider();
+          resetInterval();
+        }
+      });
+
+      sliderContainer.addEventListener('mouseup', (e) => {
+        const endX = e.clientX;
+        const deltaX = endX - startX;
+        if (deltaX > 50) {
+          currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        } else if (deltaX < -50) {
+          currentIndex = (currentIndex + 1) % totalSlides;
+        }
+        updateSlider();
+        resetInterval();
+      });
+
+      // Touch Events
+      sliderContainer.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        slider.style.transition = 'none';
+      });
+
+      sliderContainer.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        const currentX = e.touches[0].clientX;
+        const deltaX = currentX - startX;
+        slider.style.transform = `translateX(calc(-${currentIndex * 100}% + ${deltaX / sliderContainer.offsetWidth * 100}%))`;
+      });
+
+      sliderContainer.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        slider.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1)';
+        const endX = e.changedTouches[0].clientX;
+        const deltaX = endX - startX;
+        if (deltaX > 50) {
+          currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        } else if (deltaX < -50) {
+          currentIndex = (currentIndex + 1) % totalSlides;
+        }
+        updateSlider();
+        resetInterval();
+      });
+
+      // Initialize the slider
+      updateSlider();
+      startInterval();
+
+      // Chart.js Initialization for Slide 3
+      const ctx = document.getElementById('slidePriceChart').getContext('2d');
+      let slidePriceChart;
+
+      // Function to fetch price data from DexScreener
+      const fetchSlidePriceData = async () => {
+        try {
+          const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/5zoyub1lb4qqzggrvylwxkfuu7zuyyk98xw2mgk6azhj');
+          const data = await response.json();
+          
+          if (!data.pairs || data.pairs.length === 0) {
+            console.error('No pairs data found in DexScreener response.');
+            return;
+          }
+
+          const candles = data.pairs[0].candles; // Adjust based on API response structure
+
+          if (!candles || candles.length === 0) {
+            console.error('No candle data found in DexScreener response.');
+            return;
+          }
+
+          // Extract timestamps and prices
+          const labels = candles.map(candle => new Date(candle.time * 1000).toLocaleTimeString());
+          const prices = candles.map(candle => parseFloat(candle.close));
+
+          // Initialize or update Chart.js
+          if (slidePriceChart) {
+            slidePriceChart.data.labels = labels;
+            slidePriceChart.data.datasets[0].data = prices;
+            slidePriceChart.update();
+          } else {
+            slidePriceChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: 'CW Token Price (SOL)',
+                  data: prices,
+                  borderColor: 'var(--secondary-color)',
+                  backgroundColor: 'rgba(6, 214, 160, 0.2)',
+                  borderWidth: 2,
+                  pointRadius: 3,
+                  fill: true,
+                  tension: 0.3
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  x: {
+                    ticks: {
+                      color: 'var(--text-color)'
+                    },
+                    grid: {
+                      color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                  },
+                  y: {
+                    ticks: {
+                      color: 'var(--text-color)'
+                    },
+                    grid: {
+                      color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: 'var(--text-color)'
+                    }
+                  }
+                }
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching price data:', error);
+        }
+      };
+
+      // Fetch price data initially and set interval to update every minute
+      fetchSlidePriceData();
+      setInterval(fetchSlidePriceData, 60000); // Update every 60 seconds
+    });
+
+    // Smooth Scroll for Active Link Highlighting
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('nav ul li a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        if (pageYOffset >= sectionTop) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Video Switcher Functionality for Slide 2
+    document.addEventListener('DOMContentLoaded', () => {
+      const videoButtons = document.querySelectorAll('.video-switcher button');
+      const botVideo = document.getElementById('botVideo');
+      const videoDescription = document.getElementById('videoDescription');
+
+      videoButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Remove active class from all buttons
+          videoButtons.forEach(btn => btn.classList.remove('active'));
+          // Add active class to the clicked button
+          button.classList.add('active');
+          // Update video src
+          const videoId = button.getAttribute('data-video');
+          botVideo.src = `https://www.youtube.com/embed/${videoId}`;
+          // Update description
+          const description = button.getAttribute('data-description');
+          videoDescription.textContent = description;
+        });
+      });
+    });
+  </script>
+  
+</body>
+</html>
